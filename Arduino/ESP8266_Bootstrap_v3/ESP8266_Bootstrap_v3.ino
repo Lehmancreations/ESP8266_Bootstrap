@@ -67,6 +67,7 @@ void connect();
 
 void setup() 
 {
+  Serial.begin(115200);
   // set pin modes
   pinMode(LEDLight, OUTPUT);
   digitalWrite(LEDLight, LOW);
