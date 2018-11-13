@@ -70,7 +70,7 @@ void setup()
   Serial.begin(115200);
   // set pin modes
   pinMode(LEDLight, OUTPUT);
-  digitalWrite(LEDLight, LOW);
+  digitalWrite(LEDLight, HIGH);
 
 
   if (SPIFFS.begin()) 
@@ -355,11 +355,11 @@ void messageReceived(String &topic, String &payload)
 
   if (msgString == "LEDON")
   {
-    digitalWrite(LEDLight, HIGH);
+    digitalWrite(LEDLight, LOW);
   }
   else if (msgString == "LEDOFF")
   {
-    digitalWrite(LEDLight, LOW);
+    digitalWrite(LEDLight, HIGH);
   }
 
   delay(100);
@@ -378,11 +378,11 @@ boolean stateCheck()
   {
     if(digitalRead(LEDLight) == HIGH)
     {
-      client.publish(String(mqtt_topic) + "/state", "LEDON");
+      client.publish(String(mqtt_topic) + "/state", "LEDOFF");
     }
     else
     {
-      client.publish(String(mqtt_topic) + "/state", "LEDOFF");
+      client.publish(String(mqtt_topic) + "/state", "LEDON");
     }
     LEDLightState = digitalRead(LEDLight);
     changedState = true;
