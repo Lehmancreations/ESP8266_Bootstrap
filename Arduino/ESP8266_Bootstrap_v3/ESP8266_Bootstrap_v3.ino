@@ -63,8 +63,6 @@ WiFiClient net;
 MQTTClient client;
 
 
-void connect();
-
 void setup() 
 {
   Serial.begin(115200);
@@ -195,6 +193,8 @@ void setup()
   if (!wifiManager.autoConnect(ssidAP.c_str())) 
   {
     delay(3000);
+    digitalWrite(LEDLight, LOW);
+    delay(5000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
     delay(5000);
@@ -238,14 +238,24 @@ void setup()
     configFile.close();
     //end save
   }
-  
+
+
+  //Mqtt things
   mqttDeviceID = host;
   client.begin(mqtt_server, atoi(mqtt_port), net);
   client.onMessage(messageReceived);
-
+  void setWill(String(mqtt_topic) + "/state", "Offline");
   connect();
 
-  MDNS.begin(host);
+if (!MDNS.begin(host)) {
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+
+
+  
 
   httpUpdater.setup(&httpServer, update_path, update_username, update_password);
 
@@ -329,6 +339,7 @@ void connect()
   }
 
   client.subscribe(mqtt_topic);
+  client.publish(String(mqtt_topic) + "/state", "Online");
   stateCheck();
 }
 
