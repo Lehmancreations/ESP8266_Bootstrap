@@ -140,11 +140,12 @@ void setup()
 
 
 //WiFiManager
-  //set hostname
-  wifi_station_set_hostname(host);
-  //Local intialization. Once its business is done, there is no need to keep it around
+//Local intialization. Once its business is done, there is no need to keep it around
 
   WiFiManager wifiManager;
+
+  //set hostname
+  wifi_station_set_hostname(host);
 
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
