@@ -35,6 +35,8 @@ char mqtt_password[40];
 char update_username[40];
 char update_password[40];
 char update_path[34] = "/firmware";
+char state[50] = "/state";
+char willTopic[56];
 
 //Unique device ID 
 const char* mqttDeviceID;
@@ -244,27 +246,23 @@ void setup()
   mqttDeviceID = host;
   client.begin(mqtt_server, atoi(mqtt_port), net);
   client.onMessage(messageReceived);
-  void setWill(String(mqtt_topic) + "/state", "Offline");
+  strcpy(willTopic,mqtt_topic);
+  strcat(willTopic,"/state");
+  client.setWill(willTopic,"Offline");
   connect();
 
-if (!MDNS.begin(host)) {
-    Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
-  }
+MDNS.begin(host);
 
 
   
-
-  httpUpdater.setup(&httpServer, update_path, update_username, update_password);
+httpUpdater.setup(&httpServer, update_path, update_username, update_password);
 
 
 // Set up Http Server Actions
   httpServer.on("/", [](){
     if(!httpServer.authenticate(update_username, update_password))
       return httpServer.requestAuthentication();
-    httpServer.send(200, "text/plain", "Hostname: " + String(host) + "\nMQTT Server: " + String(mqtt_server) + "\nMQTT Port: " + String(mqtt_port) + "\nMQTT Authentication: " + String(mqtt_isAuthentication) + "\nMQTT Command Topic: " + String(mqtt_topic) + "\nMQTT Status Topic: " + String(mqtt_topic) + "/state" + "\nTo update firmware go to: http://"+ String(host) + ".local" + String(update_path) + "\n*To reset device settings go to " + String(host) + "/reset_wlan");
+    httpServer.send(200, "text/plain", "Hostname: " + String(host) + "\nIP Address: " + WiFi.localIP().toString() + "\nMQTT Server: " + String(mqtt_server) + "\nMQTT Port: " + String(mqtt_port) + "\nMQTT Authentication: " + String(mqtt_isAuthentication) + "\nMQTT Command Topic: " + String(mqtt_topic) + "\nMQTT Status Topic: " + String(mqtt_topic) + "/state" + "\nTo update firmware go to: http://"+ String(host) + ".local" + String(update_path) + "\n*To reset device settings go to http://" + String(host) + ".local/reset_wlan");
   });
 
 httpServer.on("/reset_wlan", [](){
@@ -289,7 +287,7 @@ httpServer.on("/reset_wlan", [](){
  * Set OTA up
  **************************/
 
-  
+    ArduinoOTA.setHostname(host); 
 ArduinoOTA.setPassword(update_password);  
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
